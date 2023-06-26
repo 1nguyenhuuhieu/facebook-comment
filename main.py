@@ -12,7 +12,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 # tạo json cookies sử dụng extensions "クッキーJSONファイル出力 for Puppeteer" https://chrome.google.com/webstore/detail/%E3%82%AF%E3%83%83%E3%82%AD%E3%83%BCjson%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%87%BA%E5%8A%9B-for-puppet/nmckokihipjgplolmcmjakknndddifde
 cookie_file_path = 'cookies/account1.json'
 # sử dụng https proxy server no authentication
-proxy_server = "115.73.129.138:13943"
+proxy_server = "171.246.87.5:12013"
 group_fb_id = '412480393057189'
 
 senders = ['Em', 'Mình', 'Tớ', 'Tôi', 'Tui']
@@ -80,20 +80,20 @@ def load_cookies(driver, cookies):
         driver.add_cookie(cookie)
     time.sleep(1)
     driver.get('https://www.facebook.com')
-    driver.implicitly_wait(10)
-    is_logged = WebDriverWait(driver, timeout=3).until(lambda d: d.find_element(By.TAG_NAME,"p"))
     if True:
         return True
     else:
         return False
     
 # spam 1 comment vào post, 3 comment vào 3 top reply    
-def comment_on_post(post_id):
+def comment_on_post():
+    time.sleep(5)
     comment_switcher = driver.find_element(By.NAME, "comment_switcher")
     select = Select(comment_switcher)
     select.select_by_value('most_engagement')
     comment_input = driver.find_element(By.ID, "composerInput")
     comment = Comment()
+    print(comment.comment)
     comment_input.send_keys(comment.comment)
     try:
         image_input = driver.find_element(By.XPATH, "//input[@type='file']")
@@ -104,7 +104,28 @@ def comment_on_post(post_id):
     submit_btn = driver.find_element(By.NAME, "submit")
 
     submit_btn.click()
-    
+
+    time.sleep(3)
+
+    # top_comments = driver.find_elements(By.LINK_TEXT, "Phản hồi")
+    # if len(top_comments) > 10:
+    #     for i in range(3):
+    #         top_comments[i].click()
+    #         time.sleep(2)
+    #         comment_input = driver.find_element(By.TAG_NAME, "textarea")
+    #         comment = Comment()
+    #         comment_input.send_keys(comment.comment)
+    #         try:
+    #             image_input = driver.find_element(By.XPATH, "//input[@type='file']")
+    #             image_input.send_keys(comment.image)
+    #             time.sleep(10)
+    #         except:
+    #             pass
+    #         submit_btn = driver.find_element(By.NAME, "submit")
+    #         time.sleep(3)
+
+    return True
+
 
 if __name__ == "__main__":
     spamed_post = []
@@ -117,29 +138,19 @@ if __name__ == "__main__":
         driver.get('https://www.facebook.com')
         time.sleep(2)
         # go to facebook group
-        driver.get(f'https://www.facebook.com/groups/{group_fb_id}')
-        time.sleep(5)
+        while True:
+            driver.get(f'https://www.facebook.com/groups/{group_fb_id}')
+            time.sleep(5)
+            comment_links =  driver.find_elements(By.LINK_TEXT, "Bình luận")
+            for post in comment_links:
+                post_link = post.get_attribute('href')
+                post_link_split = post_link.split("/")
+                post_id = post_link_split[6]
+                if post_id not in spamed_post:
+                    spamed_post.append(post_id)
+                    print(post_id)
+                    post.click()
+                    time.sleep(3)
+                    is_commented = comment_on_post()
 
-        comment_link =  driver.find_element(By.LINK_TEXT, "Bình luận")
-        comment_link.click()
-        time.sleep(5)
-        comment_switcher = driver.find_element(By.NAME, "comment_switcher")
-        select = Select(comment_switcher)
-        select.select_by_value('most_engagement')
-        comment_input = driver.find_element(By.ID, "composerInput")
-        comment = Comment()
-        comment_input.send_keys(comment.comment)
-        try:
-            image_input = driver.find_element(By.XPATH, "//input[@type='file']")
-            image_input.send_keys(comment.image)
-            time.sleep(10)
-        except:
-            pass
-        submit_btn = driver.find_element(By.NAME, "submit")
-    
-        submit_btn.click()
-        
-
-            
-        time.sleep(3)
 
