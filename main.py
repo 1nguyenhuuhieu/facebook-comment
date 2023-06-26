@@ -5,13 +5,14 @@ import random
 import os
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support.wait import WebDriverWait
 
 # config cookie and proxy
 # file json cookie
 # tạo json cookies sử dụng extensions "クッキーJSONファイル出力 for Puppeteer" https://chrome.google.com/webstore/detail/%E3%82%AF%E3%83%83%E3%82%AD%E3%83%BCjson%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%87%BA%E5%8A%9B-for-puppet/nmckokihipjgplolmcmjakknndddifde
 cookie_file_path = 'cookies/account1.json'
 # sử dụng https proxy server no authentication
-proxy_server = "116.110.15.209:8071"
+proxy_server = "115.73.129.138:13943"
 group_fb_id = '412480393057189'
 
 senders = ['Em', 'Mình', 'Tớ', 'Tôi', 'Tui']
@@ -38,7 +39,9 @@ class Comment:
         contact_info = random.choice(contacts_info)
         goodbye = random.choice(goodbyes)
         comment = f'{sender} {greeting} {receiver}. {introduction} {ad}. {contact_me} {contact_info}. {goodbye}'
-        image = random.choice(os.listdir(images_directory))
+
+        image_name = random.choice(os.listdir(images_directory))
+        image = os.path.abspath(f'{images_directory}/{image_name}')
 
         self.comment = comment
         self.image = image
@@ -77,33 +80,66 @@ def load_cookies(driver, cookies):
         driver.add_cookie(cookie)
     time.sleep(1)
     driver.get('https://www.facebook.com')
+    driver.implicitly_wait(10)
+    is_logged = WebDriverWait(driver, timeout=3).until(lambda d: d.find_element(By.TAG_NAME,"p"))
     if True:
         return True
     else:
         return False
+    
+# spam 1 comment vào post, 3 comment vào 3 top reply    
+def comment_on_post(post_id):
+    comment_switcher = driver.find_element(By.NAME, "comment_switcher")
+    select = Select(comment_switcher)
+    select.select_by_value('most_engagement')
+    comment_input = driver.find_element(By.ID, "composerInput")
+    comment = Comment()
+    comment_input.send_keys(comment.comment)
+    try:
+        image_input = driver.find_element(By.XPATH, "//input[@type='file']")
+        image_input.send_keys(comment.image)
+        time.sleep(10)
+    except:
+        pass
+    submit_btn = driver.find_element(By.NAME, "submit")
+
+    submit_btn.click()
+    
 
 if __name__ == "__main__":
-
+    spamed_post = []
     driver = init_driver(proxy_server)
-    cookies = load_cookies_fromfile(load_cookies_fromfile)
-    is_logged = load_cookies(cookies)
+    cookies = load_cookies_fromfile(cookie_file_path)
+    is_logged = load_cookies(driver, cookies)
 
     # nếu đăng nhập thành công
     if is_logged:
         driver.get('https://www.facebook.com')
         time.sleep(2)
-
         # go to facebook group
         driver.get(f'https://www.facebook.com/groups/{group_fb_id}')
+        time.sleep(5)
 
-        comment_links =  driver.find_elements(By.LINK_TEXT, "Bình luận")
-        for comment_link in comment_links:
-            comment_link.click()
-            comment_switcher = driver.find_element(By.NAME, "comment_switcher")
-            # select = Select(comment_switcher)
-            # select.select_by_value('most_engagement')
-            
-            time.sleep(10000)
-
+        comment_link =  driver.find_element(By.LINK_TEXT, "Bình luận")
+        comment_link.click()
+        time.sleep(5)
+        comment_switcher = driver.find_element(By.NAME, "comment_switcher")
+        select = Select(comment_switcher)
+        select.select_by_value('most_engagement')
+        comment_input = driver.find_element(By.ID, "composerInput")
+        comment = Comment()
+        comment_input.send_keys(comment.comment)
+        try:
+            image_input = driver.find_element(By.XPATH, "//input[@type='file']")
+            image_input.send_keys(comment.image)
+            time.sleep(10)
+        except:
+            pass
+        submit_btn = driver.find_element(By.NAME, "submit")
+    
+        submit_btn.click()
         
-        time.sleep(10000)
+
+            
+        time.sleep(3)
+
