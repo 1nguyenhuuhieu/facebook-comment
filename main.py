@@ -12,7 +12,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 # tạo json cookies sử dụng extensions "クッキーJSONファイル出力 for Puppeteer" https://chrome.google.com/webstore/detail/%E3%82%AF%E3%83%83%E3%82%AD%E3%83%BCjson%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%87%BA%E5%8A%9B-for-puppet/nmckokihipjgplolmcmjakknndddifde
 cookie_file_path = 'cookies/account1.json'
 # sử dụng https proxy server no authentication
-proxy_server = "171.246.87.5:12013"
+proxy_server = "116.96.17.120:20507"
 group_fb_id = '412480393057189'
 
 senders = ['Em', 'Mình', 'Tớ', 'Tôi', 'Tui']
@@ -87,10 +87,11 @@ def load_cookies(driver, cookies):
     
 # spam 1 comment vào post, 3 comment vào 3 top reply    
 def comment_on_post():
-    time.sleep(5)
+    time.sleep(2)
     comment_switcher = driver.find_element(By.NAME, "comment_switcher")
     select = Select(comment_switcher)
     select.select_by_value('most_engagement')
+    time.sleep(2)
     comment_input = driver.find_element(By.ID, "composerInput")
     comment = Comment()
     print(comment.comment)
@@ -101,6 +102,7 @@ def comment_on_post():
         time.sleep(10)
     except:
         pass
+    time.sleep(2)
     submit_btn = driver.find_element(By.NAME, "submit")
 
     submit_btn.click()
@@ -141,7 +143,7 @@ if __name__ == "__main__":
         while True:
             driver.get(f'https://www.facebook.com/groups/{group_fb_id}')
             time.sleep(5)
-            comment_links =  driver.find_elements(By.LINK_TEXT, "Bình luận")
+            comment_links = WebDriverWait(driver, timeout=3).until(lambda d: d.find_elements(By.LINK_TEXT, "Bình luận"))
             for post in comment_links:
                 post_link = post.get_attribute('href')
                 post_link_split = post_link.split("/")
