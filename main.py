@@ -12,7 +12,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 # tạo json cookies sử dụng extensions "クッキーJSONファイル出力 for Puppeteer" https://chrome.google.com/webstore/detail/%E3%82%AF%E3%83%83%E3%82%AD%E3%83%BCjson%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%87%BA%E5%8A%9B-for-puppet/nmckokihipjgplolmcmjakknndddifde
 cookie_file_path = 'cookies/account1.json'
 # sử dụng https proxy server no authentication
-proxy_server = "116.96.17.120:20507"
+proxy_server = '116.110.89.46:28299'
 group_fb_id = '412480393057189'
 
 senders = ['Em', 'Mình', 'Tớ', 'Tôi', 'Tui']
@@ -59,7 +59,7 @@ def init_driver(proxy_server):
     }
     chrome_options.add_experimental_option("prefs",prefs)
     chrome_options.add_argument("--window-size=360,640")
-    chrome_options.add_argument('--proxy-server=%s' % proxy_server)
+    # chrome_options.add_argument('--proxy-server=' + proxy_server)
     driver = webdriver.Chrome(options=chrome_options)
 
     return driver
@@ -91,7 +91,7 @@ def comment_on_post():
     comment_switcher = driver.find_element(By.NAME, "comment_switcher")
     select = Select(comment_switcher)
     select.select_by_value('most_engagement')
-    time.sleep(2)
+    time.sleep(3)
     comment_input = driver.find_element(By.ID, "composerInput")
     comment = Comment()
     print(comment.comment)
@@ -109,22 +109,22 @@ def comment_on_post():
 
     time.sleep(3)
 
-    # top_comments = driver.find_elements(By.LINK_TEXT, "Phản hồi")
-    # if len(top_comments) > 10:
-    #     for i in range(3):
-    #         top_comments[i].click()
-    #         time.sleep(2)
-    #         comment_input = driver.find_element(By.TAG_NAME, "textarea")
-    #         comment = Comment()
-    #         comment_input.send_keys(comment.comment)
-    #         try:
-    #             image_input = driver.find_element(By.XPATH, "//input[@type='file']")
-    #             image_input.send_keys(comment.image)
-    #             time.sleep(10)
-    #         except:
-    #             pass
-    #         submit_btn = driver.find_element(By.NAME, "submit")
-    #         time.sleep(3)
+    top_comments = driver.find_elements(By.LINK_TEXT, "Phản hồi")
+    if len(top_comments) > 10:
+        top_comments[1].click()
+        time.sleep(2)
+        comment_inputs = driver.find_elements(By.TAG_NAME, "textarea")
+        comment = Comment()
+        comment_inputs[1].send_keys(comment.comment)
+        try:
+            image_inputs = driver.find_elements(By.XPATH, "//input[@type='file']")
+            image_inputs[1].send_keys(comment.image)
+            time.sleep(10)
+        except:
+            pass
+        submit_btns = driver.find_elements(By.NAME, "submit")
+        submit_btns[1].click()
+        time.sleep(3)
 
     return True
 
@@ -143,16 +143,20 @@ if __name__ == "__main__":
         while True:
             driver.get(f'https://www.facebook.com/groups/{group_fb_id}')
             time.sleep(5)
-            comment_links = WebDriverWait(driver, timeout=3).until(lambda d: d.find_elements(By.LINK_TEXT, "Bình luận"))
-            for post in comment_links:
-                post_link = post.get_attribute('href')
-                post_link_split = post_link.split("/")
-                post_id = post_link_split[6]
-                if post_id not in spamed_post:
-                    spamed_post.append(post_id)
-                    print(post_id)
-                    post.click()
-                    time.sleep(3)
-                    is_commented = comment_on_post()
+            try:
+                comment_links = WebDriverWait(driver, timeout=3).until(lambda d: d.find_elements(By.LINK_TEXT, "Bình luận"))
+                for post in comment_links:
+                    post_link = post.get_attribute('href')
+                    post_link_split = post_link.split("/")
+                    post_id = post_link_split[6]
+                    if post_id not in spamed_post:
+                        spamed_post.append(post_id)
+                        print(post_id)
+                        post.click()
+                        time.sleep(3)
+                        is_commented = comment_on_post()
+                        break
+            except:
+                pass
 
 
