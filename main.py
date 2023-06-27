@@ -12,8 +12,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 # tạo json cookies sử dụng extensions "クッキーJSONファイル出力 for Puppeteer" https://chrome.google.com/webstore/detail/%E3%82%AF%E3%83%83%E3%82%AD%E3%83%BCjson%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%87%BA%E5%8A%9B-for-puppet/nmckokihipjgplolmcmjakknndddifde
 cookie_file_path = 'cookies/account1.json'
 # sử dụng https proxy server no authentication
-proxy_server = '116.110.89.46:28299'
-group_fb_id = '412480393057189'
+proxy_server = '115.72.9.244:10349'
+group_fb_id = 'sinhviencnttviethung'
 
 senders = ['Em', 'Mình', 'Tớ', 'Tôi', 'Tui']
 greetings = ['xin chào', 'chào', 'chào các' , 'hello', 'alo', 'xin phép']
@@ -59,7 +59,7 @@ def init_driver(proxy_server):
     }
     chrome_options.add_experimental_option("prefs",prefs)
     chrome_options.add_argument("--window-size=360,640")
-    # chrome_options.add_argument('--proxy-server=' + proxy_server)
+    chrome_options.add_argument('--proxy-server=' + proxy_server)
     driver = webdriver.Chrome(options=chrome_options)
 
     return driver
