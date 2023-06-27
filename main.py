@@ -1,8 +1,8 @@
-from selenium import webdriver
 import time
 import json
 import random
 import os
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.wait import WebDriverWait
@@ -12,7 +12,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 # tạo json cookies sử dụng extensions "クッキーJSONファイル出力 for Puppeteer" https://chrome.google.com/webstore/detail/%E3%82%AF%E3%83%83%E3%82%AD%E3%83%BCjson%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%87%BA%E5%8A%9B-for-puppet/nmckokihipjgplolmcmjakknndddifde
 cookie_file_path = 'cookies/account1.json'
 # sử dụng https proxy server no authentication
-proxy_server = '115.72.9.244:10349'
+proxy_server = '171.226.237.27:33621'
 group_fb_id = 'sinhviencnttviethung'
 
 senders = ['Em', 'Mình', 'Tớ', 'Tôi', 'Tui']
