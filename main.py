@@ -21,6 +21,40 @@ contacts_info = ['09123456789', 'shopee.vn', 'nguyenvanmanh@gmail.com']
 goodbyes = ['Xin cảm ơn đã xem', 'Rất vui lòng được liên hệ', 'Chúc một ngày tốt lành']
 images_directory =  'images/'
 
+   
+def is_post_id_unique(post_id):
+    # Connect to the SQLite database
+    conn = sqlite3.connect('data.db')
+    cursor = conn.cursor()
+
+    # Execute a SELECT query to check if the post_id exists in the database
+    cursor.execute('SELECT post_id FROM records WHERE post_id = ?', (post_id,))
+    result = cursor.fetchone()
+
+    # Close the database connection
+    conn.close()
+
+    # Return True if the post_id is unique (not found in the database), False otherwise
+    return result is None
+
+def load_config(file_path):
+    with open(file_path, 'r') as json_file:
+        config_data = json.load(json_file)
+    return config_data
+
+config_file = 'config.json'  # Path to your JSON config file
+config_data = load_config(config_file)
+# config cookie and proxy
+# file json cookie
+# tạo json cookies sử dụng extensions "クッキーJSONファイル出力 for Puppeteer" https://chrome.google.com/webstore/detail/%E3%82%AF%E3%83%83%E3%82%AD%E3%83%BCjson%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%87%BA%E5%8A%9B-for-puppet/nmckokihipjgplolmcmjakknndddifde
+cookie_file_path = config_data['cookie']
+# sử dụng https proxy server no authentication
+
+tmp_proxy_apikey = config_data['api_key']
+group_fb_id = config_data['groups']
+limit_loop = int(config_data['total_comment'])
+image = config_data['image']
+comment = config_data['comment']
 
 def get_current_timestamp():
     now = datetime.now()
@@ -44,13 +78,7 @@ def save_to_database(timestamp, post_id):
     conn.commit()
     conn.close()
 
-def load_config(file_path):
-    with open(file_path, 'r') as json_file:
-        config_data = json.load(json_file)
-    return config_data
 
-config_file = 'config.json'  # Path to your JSON config file
-config_data = load_config(config_file)
 
 def get_proxy(tmp_proxy_apikey):
     url_new_proxy = "https://tmproxy.com/api/proxy/get-new-proxy"
@@ -75,18 +103,7 @@ def get_proxy(tmp_proxy_apikey):
         else:
             print("Lỗi, không lấy được proxy")
             return None
-        
-
-# config cookie and proxy
-# file json cookie
-# tạo json cookies sử dụng extensions "クッキーJSONファイル出力 for Puppeteer" https://chrome.google.com/webstore/detail/%E3%82%AF%E3%83%83%E3%82%AD%E3%83%BCjson%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%87%BA%E5%8A%9B-for-puppet/nmckokihipjgplolmcmjakknndddifde
-cookie_file_path = config_data['cookie']
-# sử dụng https proxy server no authentication
-
-tmp_proxy_apikey = config_data['api_key']
-group_fb_id = config_data['groups']
-limit_loop = int(config_data['total_comment'])
-
+     
 
 # random spam comment class
 class CommentRandom:
@@ -175,29 +192,31 @@ def comment_on_post(comment):
     submit_btn.click()
 
     time.sleep(3)
-
-    top_comments = driver.find_elements(By.LINK_TEXT, "Phản hồi")
-    if len(top_comments) > 10:
-        top_comments[1].click()
-        time.sleep(2)
-        comment_inputs = driver.find_elements(By.TAG_NAME, "textarea")
-        comment = Comment()
-        comment_inputs[1].send_keys(comment.comment)
-        try:
-            image_inputs = driver.find_elements(By.XPATH, "//input[@type='file']")
-            image_inputs[1].send_keys(comment.image)
-            time.sleep(10)
-        except:
-            pass
-        submit_btns = driver.find_elements(By.NAME, "submit")
-        submit_btns[1].click()
-        time.sleep(3)
+    try:
+        top_comments = driver.find_elements(By.LINK_TEXT, "Phản hồi")
+        if len(top_comments) > 10:
+            top_comments[1].click()
+            time.sleep(2)
+            comment_inputs = driver.find_elements(By.TAG_NAME, "textarea")
+            comment = Comment()
+            comment_inputs[1].send_keys(comment.comment)
+            try:
+                image_inputs = driver.find_elements(By.XPATH, "//input[@type='file']")
+                image_inputs[1].send_keys(comment.image)
+                time.sleep(10)
+            except:
+                pass
+            submit_btns = driver.find_elements(By.NAME, "submit")
+            submit_btns[1].click()
+            time.sleep(3)
+    except:
+        pass
 
     return True
 
 
 if __name__ == "__main__":
-    spamed_post = []
+
     proxy_server = get_proxy(tmp_proxy_apikey)
     driver = init_driver(proxy_server)
     cookies = load_cookies_fromfile(cookie_file_path)
@@ -208,7 +227,6 @@ if __name__ == "__main__":
         driver.get('https://www.facebook.com')
         # go to facebook group
         while limit_loop > 0:
-            comment = Comment()
             driver.get(f'https://www.facebook.com/groups/{group_fb_id}')
             time.sleep(5)
             try:
@@ -217,16 +235,19 @@ if __name__ == "__main__":
                     post_link = post.get_attribute('href')
                     post_link_split = post_link.split("/")
                     post_id = post_link_split[6]
-                    if post_id not in spamed_post:
-                        
-                        spamed_post.append(post_id)
-                        post.click()
-                        time.sleep(3)
-                        is_commented = comment_on_post()
-                        timestamp = get_current_timestamp()
-                        save_to_database(timestamp, post_id)
-                        limit_loop -= 1
-                        break
+                    unique = is_post_id_unique(post_id)
+                    if unique:
+                        try:
+                            post.click()
+                            time.sleep(3)
+                            comment = Comment(comment, image)
+                            is_commented = comment_on_post(comment)
+                            timestamp = get_current_timestamp()
+                            print(f'{timestamp}. Post ID: {post_id}')
+                            save_to_database(timestamp, post_id)
+                            limit_loop -= 1
+                        except:
+                            pass
             except:
                 pass
 

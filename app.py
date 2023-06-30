@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 import subprocess
 import json
+import os
 
 import sqlite3
 from flask import jsonify
@@ -24,7 +25,8 @@ def config():
         if image:
             # Save the image file to the server
             image.save('static/imgs/' + image.filename)
-            data['image'] = 'static/imgs/' + image.filename
+            data['image'] = os.path.abspath('static/imgs/' + image.filename)
+            data['image_view'] = 'static/imgs/' + image.filename
 
         cookie = request.files['cookie']
         if cookie:
