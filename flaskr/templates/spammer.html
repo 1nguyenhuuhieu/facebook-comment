@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Facebook Spam Comment - Spammer</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/">Facebook Spam Comment</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/config">Config</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/spammer">Spammer</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <h1>Spammer Page</h1>
+        <form method="POST">
+            <button type="submit" class="btn btn-primary" name="run_tool">Run Tool</button>
+        </form>
+
+        <table id="data-table" class="table mt-4">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Post ID</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+    </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Function to fetch and update the table data
+            function updateTable() {
+                $.ajax({
+                    url: '/fetch_data',  // Flask route to fetch data from the database
+                    success: function(response) {
+                        // Clear the existing table content
+                        $('#data-table tbody').empty();
+
+                        // Update the table with the fetched data
+                        response.data.forEach(function(row) {
+                            $('#data-table tbody').append('<tr><td>' + row.timestamp + '</td><td>' + row.post_id + '</td></tr>');
+                        });
+                    }
+                });
+            }
+
+            // Call the updateTable function initially
+            updateTable();
+
+            // Set an interval to update the table every 5 seconds (adjust as needed)
+            setInterval(updateTable, 5000);
+        });
+    </script>
+
+</body>
+</html>

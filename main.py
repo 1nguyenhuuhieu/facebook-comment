@@ -80,10 +80,9 @@ def load_cookies(driver, cookies):
         driver.add_cookie(cookie)
     time.sleep(1)
     driver.get('https://www.facebook.com')
-    if True:
-        return True
-    else:
-        return False
+    
+    return True
+
     
 # spam 1 comment vào post, 3 comment vào 3 top reply    
 def comment_on_post():
