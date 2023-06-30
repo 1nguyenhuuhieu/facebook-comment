@@ -6,14 +6,10 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.wait import WebDriverWait
+import requests
+from datetime import datetime
 
-# config cookie and proxy
-# file json cookie
-# tạo json cookies sử dụng extensions "クッキーJSONファイル出力 for Puppeteer" https://chrome.google.com/webstore/detail/%E3%82%AF%E3%83%83%E3%82%AD%E3%83%BCjson%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%87%BA%E5%8A%9B-for-puppet/nmckokihipjgplolmcmjakknndddifde
-cookie_file_path = 'cookies/account1.json'
-# sử dụng https proxy server no authentication
-proxy_server = '171.226.237.27:33621'
-group_fb_id = 'sinhviencnttviethung'
+import sqlite3
 
 senders = ['Em', 'Mình', 'Tớ', 'Tôi', 'Tui']
 greetings = ['xin chào', 'chào', 'chào các' , 'hello', 'alo', 'xin phép']
@@ -25,8 +21,75 @@ contacts_info = ['09123456789', 'shopee.vn', 'nguyenvanmanh@gmail.com']
 goodbyes = ['Xin cảm ơn đã xem', 'Rất vui lòng được liên hệ', 'Chúc một ngày tốt lành']
 images_directory =  'images/'
 
+
+def get_current_timestamp():
+    now = datetime.now()
+    timestamp = now.strftime('%Y-%m-%d %H:%M:%S')
+    return timestamp
+
+
+def save_to_database(timestamp, post_id):
+    # Connect to the SQLite database
+    conn = sqlite3.connect('data.db')
+    cursor = conn.cursor()
+
+    # Create the 'records' table if it doesn't exist
+    cursor.execute('''CREATE TABLE IF NOT EXISTS records
+                      (timestamp TEXT, post_id TEXT)''')
+
+    # Insert the data into the 'records' table
+    cursor.execute('INSERT INTO records VALUES (?, ?)', (timestamp, post_id))
+
+    # Commit the changes and close the database connection
+    conn.commit()
+    conn.close()
+
+def load_config(file_path):
+    with open(file_path, 'r') as json_file:
+        config_data = json.load(json_file)
+    return config_data
+
+config_file = 'config.json'  # Path to your JSON config file
+config_data = load_config(config_file)
+
+def get_proxy(tmp_proxy_apikey):
+    url_new_proxy = "https://tmproxy.com/api/proxy/get-new-proxy"
+    url_current_proxy = "https://tmproxy.com/api/proxy/get-current-proxy"
+    new_proxy_json = {
+    "api_key": tmp_proxy_apikey,
+    "sign": "string",
+    "id_location": 0
+    }
+    current_proxy_json = {
+    "api_key": tmp_proxy_apikey
+    }
+    r = requests.post(url_new_proxy, json=new_proxy_json)
+    if r.json()['data']['https']:
+        proxy =  r.json()['data']['https']
+        return proxy
+    else:
+        r = requests.post(url_current_proxy, json=current_proxy_json)
+        if r.json()['data']['https']:
+            proxy =  r.json()['data']['https']
+            return proxy
+        else:
+            print("Lỗi, không lấy được proxy")
+            return None
+        
+
+# config cookie and proxy
+# file json cookie
+# tạo json cookies sử dụng extensions "クッキーJSONファイル出力 for Puppeteer" https://chrome.google.com/webstore/detail/%E3%82%AF%E3%83%83%E3%82%AD%E3%83%BCjson%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%87%BA%E5%8A%9B-for-puppet/nmckokihipjgplolmcmjakknndddifde
+cookie_file_path = config_data['cookie']
+# sử dụng https proxy server no authentication
+
+tmp_proxy_apikey = config_data['api_key']
+group_fb_id = config_data['groups']
+limit_loop = int(config_data['total_comment'])
+
+
 # random spam comment class
-class Comment:
+class CommentRandom:
     def __init__(self):
         sender = random.choice(senders)
         greeting = random.choice(greetings)
@@ -45,6 +108,13 @@ class Comment:
 
         self.comment = comment
         self.image = image
+
+
+class Comment:
+    def __init__(self, comment, image):
+        self.comment = comment
+        self.image = image
+
 
 def init_driver(proxy_server):
     mobile_emulation = {
@@ -85,15 +155,13 @@ def load_cookies(driver, cookies):
 
     
 # spam 1 comment vào post, 3 comment vào 3 top reply    
-def comment_on_post():
+def comment_on_post(comment):
     time.sleep(2)
     comment_switcher = driver.find_element(By.NAME, "comment_switcher")
     select = Select(comment_switcher)
     select.select_by_value('most_engagement')
     time.sleep(3)
     comment_input = driver.find_element(By.ID, "composerInput")
-    comment = Comment()
-    print(comment.comment)
     comment_input.send_keys(comment.comment)
     try:
         image_input = driver.find_element(By.XPATH, "//input[@type='file']")
@@ -130,6 +198,7 @@ def comment_on_post():
 
 if __name__ == "__main__":
     spamed_post = []
+    proxy_server = get_proxy(tmp_proxy_apikey)
     driver = init_driver(proxy_server)
     cookies = load_cookies_fromfile(cookie_file_path)
     is_logged = load_cookies(driver, cookies)
@@ -137,9 +206,9 @@ if __name__ == "__main__":
     # nếu đăng nhập thành công
     if is_logged:
         driver.get('https://www.facebook.com')
-        time.sleep(2)
         # go to facebook group
-        while True:
+        while limit_loop > 0:
+            comment = Comment()
             driver.get(f'https://www.facebook.com/groups/{group_fb_id}')
             time.sleep(5)
             try:
@@ -149,13 +218,19 @@ if __name__ == "__main__":
                     post_link_split = post_link.split("/")
                     post_id = post_link_split[6]
                     if post_id not in spamed_post:
+                        
                         spamed_post.append(post_id)
-                        print(post_id)
                         post.click()
                         time.sleep(3)
                         is_commented = comment_on_post()
+                        timestamp = get_current_timestamp()
+                        save_to_database(timestamp, post_id)
+                        limit_loop -= 1
                         break
             except:
                 pass
+
+            time.sleep(2)
+
 
 

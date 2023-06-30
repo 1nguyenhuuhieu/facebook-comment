@@ -52,7 +52,7 @@ def spammer():
     if request.method == 'POST':
         if 'run_tool' in request.form:
             # Execute the tool.py Python file
-            subprocess.Popen(['python', 'tool.py'])
+            subprocess.Popen(['python', 'main.py'])
 
             # Alternatively, you can use the following command if you want to run the file as a background process:
             # subprocess.Popen(['python', 'tool.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
