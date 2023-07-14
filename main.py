@@ -140,7 +140,6 @@ def init_driver(proxy_server):
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_experimental_option("mobileEmulation", mobile_emulation)
 
-    # tắt thông báo và tắt hiển thị hình ảnh (1: on; 2: off)
     prefs = {"profile.default_content_setting_values.notifications" : 2,
             "profile.managed_default_content_settings.images": 1
     }
