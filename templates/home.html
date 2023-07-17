@@ -3,6 +3,28 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-    <h2>Welcome to the Facebook Auto Comment App!</h2>
-    <!-- Add your home page content here -->
+    <h2>Posts</h2>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Timestamp</th>
+                <th>Post ID</th>
+                <th>Is Commented</th>
+                <th>Can Comment</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ row['id'] }}</td>
+                <td>{{ row['timestamp'] }}</td>
+                <td>{{ row['post_id'] }}</td>
+                <td>{{ row['is_commented'] }}</td>
+                <td>{{ row['can_comment'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}
