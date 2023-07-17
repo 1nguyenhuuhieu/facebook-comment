@@ -10,17 +10,6 @@ import requests
 from datetime import datetime
 
 import sqlite3
-
-senders = ['Em', 'Mình', 'Tớ', 'Tôi', 'Tui']
-greetings = ['xin chào', 'chào', 'chào các' , 'hello', 'alo', 'xin phép']
-receivers = ['anh/chị', 'bạn', 'anh', 'chị', 'mọi người']
-introductions = ['hiện nay bên :place_holder: có sẵn', ':place_holder: đang có' , ':place_holder: triển khai dịch vụ', ':place_holder: cung cấp sản phẩm', ':place_holder: nhận' ]
-ads = ['áo phông', 'giày dép', 'tivi', 'tủ lạnh']
-contacts_me = ['vui lòng liên hệ', 'thông tin liên lạc', 'ưu đãi tại']
-contacts_info = ['09123456789', 'shopee.vn', 'nguyenvanmanh@gmail.com']
-goodbyes = ['Xin cảm ơn đã xem', 'Rất vui lòng được liên hệ', 'Chúc một ngày tốt lành']
-images_directory =  'images/'
-
    
 def is_post_id_unique(post_id):
     # Connect to the SQLite database
