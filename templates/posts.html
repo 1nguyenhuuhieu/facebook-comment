@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Posts{% endblock %}
+
+{% block content %}
+
+    <h2>Posts</h2>
+
+    <form action="/run_comment_script" method="POST" >
+        <button type="submit" class="btn btn-success">Run</button>
+    </form>
+
+
+    <form method="POST" action="/submit_post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="comment">Comment</label>
+            <textarea class="form-control" id="comment" name="comment" rows="3">{{ post.comment }}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="photo">Photo</label>
+            <input type="file" class="form-control-file" id="photo" name="photo">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    {% if post.photo_filename %}
+    <h3>Thumbnail</h3>
+    <img src="{{ url_for('static', filename=photo ) }}" width="300px" class="img-thumbnail" alt="Thumbnail">
+    {% endif %}
+    <br>
+
+    <table id="posts-table" class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Timestamp</th>
+                <th>Post ID</th>
+                <th>Is Commented</th>
+                <th>Can Comment</th>
+            </tr>
+        </thead>
+        <tbody id="posts-table-body">
+            <!-- Table body content will be inserted dynamically -->
+        </tbody>
+    </table>
+    <div id="pagination" class="text-center">
+        <!-- Pagination links will be inserted dynamically -->
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var currentPage = 1;
+            var pageSize = 10;
+
+            function loadPosts(page) {
+                $.ajax({
+                    url: '/posts_ajax',
+                    type: 'GET',
+                    data: {
+                        page: page,
+                        size: pageSize
+                    },
+                    success: function (data) {
+                        // Update the table body with the received data
+                        $('#posts-table-body').html(data.table);
+
+                        // Update the pagination links
+                        $('#pagination').html(data.pagination);
+                    }
+                });
+            }
+
+            // Load the initial posts on page load
+            loadPosts(currentPage);
+
+            // Pagination click event handler
+            $(document).on('click', '.pagination-link', function () {
+                var page = $(this).data('page');
+                loadPosts(page);
+            });
+        });
+    </script>
+{% endblock %}

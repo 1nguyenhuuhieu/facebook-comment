@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+    <h2>Settings Page</h2>
+    <form method="POST" action="{{ url_for('settings') }}">
+        <div class="form-group">
+            <label for="url">URL:</label>
+            <input type="text" class="form-control" id="url" name="url" required>
+        </div>
+        <div class="form-group">
+            <label for="type">Type:</label>
+            <select class="form-control" id="type" name="type" required>
+                <option value="Fanpage">Fanpage</option>
+                <option value="Group">Group</option>
+                <option value="Personal">Personal</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Source Post</button>
+    </form>
+
+    <h3>Source Posts:</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>URL</th>
+                <th>Type</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in source_posts %}
+            <tr>
+                <td>{{ post['id'] }}</td>
+                <td><a href="{{ post['url'] }}" target="_blank">{{ post['url'] }}</a></td>
+                <td>{{ post['type'] }}</td>
+                <td>
+                    <form action="{{ url_for('delete', post_id=post['id']) }}" method="POST">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
